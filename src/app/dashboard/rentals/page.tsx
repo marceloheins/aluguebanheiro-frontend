@@ -1,240 +1,137 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getRentals, createRental, exportRentalsCsv, Rental } from '@/features/rentals/api/rentalApi';
-import { getCustomers, Customer } from '@/features/customers/api/customerApi';
-import { getEquipments, Equipment } from '@/features/equipments/api/equipmentApi';
+import { useEffect, useState } from 'react';
+import { api } from '@/services/api';
+import Link from 'next/link';
 
 export default function RentalsPage() {
-  const [rentals, setRentals] = useState<Rental[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [equipments, setEquipments] = useState<Equipment[]>([]);
+  const [rentals, setRentals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form states
-  const [customerId, setCustomerId] = useState('');
-  const [equipmentId, setEquipmentId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [totalValue, setTotalValue] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  async function loadData() {
-    try {
-      const [rentalsData, customersData, equipmentsData] = await Promise.all([
-        getRentals(),
-        getCustomers(),
-        getEquipments(),
-      ]);
-      setRentals(rentalsData);
-      setCustomers(customersData);
-      // Filtra apenas equipamentos disponíveis para nova locação
-      setEquipments(equipmentsData.filter(eq => eq.status === 'AVAILABLE'));
-    } catch (error) {
-      console.error('Erro ao carregar dados de locação:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [exporting, setExporting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
-    loadData();
+    api.get('/rentals')
+      .then((res) => setRentals(res.data))
+      .catch((err) => console.error('Erro ao buscar contratos:', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === rentals.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(rentals.map((r) => r.id));
+    }
+  };
+
+  const handleExportSelected = async () => {
+    if (selectedIds.length === 0) {
+      alert('Selecione pelo menos um contrato para exportar.');
+      return;
+    }
 
     try {
-      await createRental({
-        customerId,
-        equipmentId,
-        startDate,
-        endDate: endDate || undefined,
-        totalValue: Number(totalValue),
-      });
-      setCustomerId('');
-      setEquipmentId('');
-      setStartDate('');
-      setEndDate('');
-      setTotalValue('');
-      setIsModalOpen(false);
-      loadData();
+      setExporting(true);
+      const selectedData = rentals.filter((r) => selectedIds.includes(r.id));
+      
+      // 1. Adicionado o campo "Contratante" no cabeçalho do CSV
+      const csvHeader = 'ID;Contratante;Início;Status;Valor Total\n';
+      const csvRows = selectedData.map((r) => {
+        const customerName = r.customer?.name ? `"${r.customer.name}"` : '"N/A"';
+        return `${r.id};${customerName};${new Date(r.startDate).toLocaleDateString()};${r.status};${r.totalValue}`;
+      }).join('\n');
+
+      // 2. BOM (\uFEFF) para UTF-8 correto no Excel
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `contratos-selecionados-${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     } catch (error) {
-      console.error('Erro ao registrar locação:', error);
-      alert('Erro ao registrar locação.');
+      console.error('Erro ao exportar selecionados:', error);
+      alert('Erro ao gerar relatório dos selecionados.');
     } finally {
-      setSubmitting(false);
+      setExporting(false);
     }
-  }
+  };
+
+  if (loading) return <div className="p-8">Carregando contratos...</div>;
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <main className="p-8 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestão de Locações</h1>
-          <p className="text-gray-500 text-sm">Controle contratos, vigências e alocação de equipamentos.</p>
+        <h1 className="text-2xl font-bold">Contratos de Locação</h1>
+        <div className="flex gap-3">
+          <button
+            onClick={handleExportSelected}
+            disabled={exporting || selectedIds.length === 0}
+            className="bg-gray-600 text-white px-4 py-2 rounded-md font-bold hover:bg-gray-700 transition disabled:opacity-50"
+          >
+            {exporting ? 'Exportando...' : `📥 Exportar Selecionados (${selectedIds.length})`}
+          </button>
+          <Link href="/dashboard/rentals/new" className="bg-blue-600 text-white px-4 py-2 rounded-md font-bold hover:bg-blue-700 transition">
+            Novo Contrato
+          </Link>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          + Nova Locação
-        </button>
       </div>
 
-      <div className="flex space-x-3">
-  <button
-    onClick={() => exportRentalsCsv()}
-    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-  >
-    📥 Exportar CSV
-  </button>
-  <button
-    onClick={() => setIsModalOpen(true)}
-    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-  >
-    + Nova Locação
-  </button>
-</div>
-      
-
-      <div className="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-        {loading ? (
-          <div className="p-8 text-center text-gray-500">Carregando locações...</div>
-        ) : rentals.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">Nenhum contrato de locação registrado.</div>
-        ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      {rentals.length === 0 ? (
+        <p className="text-gray-500">Nenhum contrato cadastrado.</p>
+      ) : (
+        <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipamento</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Início</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="p-3 w-10 text-center">
+                  <input
+                    type="checkbox"
+                    onChange={handleSelectAll}
+                    checked={selectedIds.length === rentals.length && rentals.length > 0}
+                  />
+                </th>
+                <th className="p-3 text-sm font-semibold text-gray-600">ID</th>
+                <th className="p-3 text-sm font-semibold text-gray-600">Contratante</th>
+                <th className="p-3 text-sm font-semibold text-gray-600">Início</th>
+                <th className="p-3 text-sm font-semibold text-gray-600">Status</th>
+                <th className="p-3 text-sm font-semibold text-gray-600">Valor Total</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {rentals.map((rental) => (
-                <tr key={rental.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {rental.customer?.name || 'Cliente'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {rental.equipment?.serialNumber} ({rental.equipment?.type})
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(rental.startDate).toLocaleDateString('pt-BR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                    R$ {Number(rental.totalValue).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {rental.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+            <tbody className="divide-y divide-gray-200">
+              {rentals.map((rental) => {
+                const isSelected = selectedIds.includes(rental.id);
+                return (
+                  <tr key={rental.id} className={`hover:bg-gray-50 ${isSelected ? 'bg-blue-50/50' : ''}`}>
+                    <td className="p-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleSelect(rental.id)}
+                      />
+                    </td>
+                    <td className="p-3 text-sm font-medium text-gray-500">{rental.id.slice(0, 8)}...</td>
+                    <td className="p-3 text-sm font-semibold text-gray-900">{rental.customer?.name || 'Cliente não encontrado'}</td>
+                    <td className="p-3 text-sm">{new Date(rental.startDate).toLocaleDateString()}</td>
+                    <td className="p-3 text-sm"><span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">{rental.status}</span></td>
+                    <td className="p-3 text-sm font-bold">R$ {rental.totalValue?.toFixed(2)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-        )}
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Nova Locação / Contrato</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-                <select
-                  required
-                  value={customerId}
-                  onChange={(e) => setCustomerId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
-                >
-                  <option value="">Selecione um cliente...</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Equipamento Disponível</label>
-                <select
-                  required
-                  value={equipmentId}
-                  onChange={(e) => setEquipmentId(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
-                >
-                  <option value="">Selecione um equipamento...</option>
-                  {equipments.map((eq) => (
-                    <option key={eq.id} value={eq.id}>
-                      {eq.serialNumber} - {eq.type === 'PORTA_POTTY' ? 'Banheiro' : 'Caçamba'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Data Início</label>
-                  <input
-                    type="date"
-                    required
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Previsão Fim</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  required
-                  value={totalValue}
-                  onChange={(e) => setTotalValue(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50"
-                >
-                  {submitting ? 'Salvando...' : 'Criar Contrato'}
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

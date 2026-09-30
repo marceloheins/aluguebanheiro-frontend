@@ -1,4 +1,4 @@
-// src/app/(dashboard)/map/page.tsx
+// src/app/dashboard/map/page.tsx
 "use client";
 
 import dynamic from 'next/dynamic';
@@ -15,6 +15,9 @@ export default function MapPage() {
 
   if (isLoading) return <div className="p-8 text-gray-500">Carregando dados das obras...</div>;
 
+  // Filtra apenas clientes que possuem latitude e longitude cadastradas
+  const customersWithLocation = customers?.filter(c => c.addressLat && c.addressLng) || [];
+
   return (
     <main className="p-8 max-w-7xl mx-auto">
       <div className="mb-6">
@@ -22,7 +25,7 @@ export default function MapPage() {
         <p className="text-sm text-gray-500">Visualize a distribuição geográfica dos clientes e ativos alocados na cidade.</p>
       </div>
 
-      <MapComponent customers={customers || []} />
+      <MapComponent customers={customersWithLocation} />
     </main>
   );
 }
