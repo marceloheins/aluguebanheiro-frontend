@@ -15,20 +15,44 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export type EquipmentStatus = 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' ;
+export type EquipmentLocation = 'YARD' | 'AT_CLIENT' | 'IN_TRANSIT';
+
 export interface Equipment {
   id: string;
   tenantId: string;
   type: 'DUMPSTER' | 'PORTA_POTTY';
-  status: 'AVAILABLE' | 'IN_USE_AT_CLIENT' | 'MAINTENANCE';
+  status: EquipmentStatus;
+  location: EquipmentLocation;
   serialNumber: string;
+  rentalItem?: Array<{
+    rental: {
+      customer: {
+        name: string;
+      };
+    };
+  }>;
 }
 
 export async function getEquipments(): Promise<Equipment[]> {
   const { data } = await api.get('/equipments');
   return Array.isArray(data) ? data : [];
 }
+export async function getYardEquipments(): Promise<Equipment[]> {
+  const { data } = await api.get('/equipments/yard');
+  return Array.isArray(data) ? data : [];
+}
 
 export async function createEquipment(equipmentData: Omit<Equipment, 'id' | 'tenantId'>): Promise<Equipment> {
   const { data } = await api.post('/equipments', equipmentData);
   return data;
+}
+
+export async function updateEquipmentStatusAndLocation(
+  id: string,
+  data:{ status?: EquipmentStatus; location?: EquipmentLocation}
+): Promise<Equipment> {
+  const response = await api.patch(`/equipments/${id}/status`, data);
+  return response.data;
+  
 }
