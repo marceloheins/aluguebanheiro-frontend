@@ -49,7 +49,7 @@ export default function YardManagementPage() {
     <main className="p-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestão de Pátio (Yard Management)</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Gestão de Pátio</h1>
           <p className="text-sm text-gray-500">Controle o status comercial e a localização física dos ativos em tempo real.</p>
         </div>
 

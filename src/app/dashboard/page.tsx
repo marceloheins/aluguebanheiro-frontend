@@ -1,4 +1,4 @@
-// src/app/(dashboard)/page.tsx
+// src/app/dashboard/page.tsx
 "use client";
 
 import { api } from '@/services/api';
@@ -49,7 +49,20 @@ const handleExport = async () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Visão Operacional de Hoje</h1>
         <p className="text-sm text-gray-500">Acompanhe em tempo real o andamento das entregas e coletas na rua.</p>
+         <button
+          onClick={handleExport}
+          className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700 transition shadow-sm"
+        >
+          Exportar Relatório
+        </button>
+      
+      
       </div>
+
+
+
+     
+      
 
       {/* Cards de Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

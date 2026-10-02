@@ -12,7 +12,8 @@ export default function EquipmentsPage() {
   // Form states alinhados ao Prisma
   const [serialNumber, setSerialNumber] = useState('');
   const [type, setType] = useState<'DUMPSTER' | 'PORTA_POTTY'>('PORTA_POTTY');
-  const [status, setStatus] = useState<'AVAILABLE' | 'IN_USE_AT_CLIENT' | 'MAINTENANCE'>('AVAILABLE');
+  const [status, setStatus] = useState<'AVAILABLE' | 'RENTED' | 'MAINTENANCE'>('AVAILABLE');
+  const [location, setLocation] = useState<'YARD' | 'AT_CLIENT' | 'IN_TRANSIT'>('YARD'); // 👈 NOVO ESTADO AQUI
   const [submitting, setSubmitting] = useState(false);
 
   async function fetchEquipments() {
@@ -36,10 +37,12 @@ export default function EquipmentsPage() {
     setSubmitting(true);
 
     try {
-      await createEquipment({ serialNumber, type, status });
+      // 👈 AGORA ENVIAMOS O LOCATION PARA A API E O TYPESCRIPT FICA FELIZ
+      await createEquipment({ serialNumber, type, status, location });
       setSerialNumber('');
       setType('PORTA_POTTY');
       setStatus('AVAILABLE');
+      setLocation('YARD'); // 👈 RESET DO CAMPO
       setIsModalOpen(false);
       fetchEquipments();
     } catch (error) {
@@ -54,7 +57,7 @@ export default function EquipmentsPage() {
     switch (status) {
       case 'AVAILABLE':
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>;
-      case 'IN_USE_AT_CLIENT':
+      case 'RENTED':
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Alocado no Cliente</span>;
       case 'MAINTENANCE':
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Manutenção</span>;
@@ -63,12 +66,21 @@ export default function EquipmentsPage() {
     }
   };
 
+  const locationLabel = (loc: string) => {
+    switch (loc) {
+      case 'YARD': return 'Pátio';
+      case 'AT_CLIENT': return 'No Cliente';
+      case 'IN_TRANSIT': return 'Em Trânsito';
+      default: return loc;
+    }
+  };
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestão de Equipamentos</h1>
-          <p className="text-gray-500 text-sm">Controle o estoque de banheiros portáteis e caçambas.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Equipamentos</h1>
+          <p className="text-gray-500 text-sm">Controle o estoque de banheiros químicos e caçambas.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -90,6 +102,7 @@ export default function EquipmentsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número de Série</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localização</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -97,9 +110,12 @@ export default function EquipmentsPage() {
                 <tr key={eq.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{eq.serialNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {eq.type === 'PORTA_POTTY' ? 'Banheiro Portátil' : 'Caçamba / Estrutura'}
+                    {eq.type === 'PORTA_POTTY' ? 'Banheiro Químico' : 'Caçamba / Estrutura'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{statusBadge(eq.status)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
+                    {locationLabel(eq.location)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -130,7 +146,7 @@ export default function EquipmentsPage() {
                   onChange={(e) => setType(e.target.value as any)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
-                  <option value="PORTA_POTTY">Banheiro Portátil</option>
+                  <option value="PORTA_POTTY">Banheiro Químico</option>
                   <option value="DUMPSTER">Caçamba / Estrutura</option>
                 </select>
               </div>
@@ -142,8 +158,21 @@ export default function EquipmentsPage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="AVAILABLE">Disponível</option>
-                  <option value="IN_USE_AT_CLIENT">Alocado no Cliente</option>
+                  <option value="RENTED">Alocado no Cliente</option>
                   <option value="MAINTENANCE">Manutenção</option>
+                </select>
+              </div>
+              {/* 👇 NOVO CAMPO: LOCALIZAÇÃO 👇 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value as any)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                >
+                  <option value="YARD">Pátio</option>
+                  <option value="AT_CLIENT">No Cliente</option>
+                  <option value="IN_TRANSIT">Em Trânsito</option>
                 </select>
               </div>
               <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">

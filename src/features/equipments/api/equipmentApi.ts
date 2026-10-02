@@ -1,11 +1,9 @@
 // src/features/equipments/api/equipmentApi.ts
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { api } from '@/lib/api';
 
-const api = axios.create({
-  baseURL: 'http://localhost:3333',
-  withCredentials: true,
-});
+
 
 api.interceptors.request.use((config) => {
   const token = Cookies.get('saas_token');

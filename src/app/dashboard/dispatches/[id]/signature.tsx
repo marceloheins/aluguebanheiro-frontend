@@ -5,30 +5,53 @@ import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import SignatureScreen from 'react-native-signature-canvas';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { saveDispatchOffline } from '../../../../services/offlineStorage';
+import { api } from '../../../../services/api'; // Ou o caminho da sua api client
 
 export default function SignatureCaptureScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // Recebe o id da OS e opcionalmente a foto e notas tiradas na etapa anterior
+  const { id, photoUri, notes } = useLocalSearchParams<{ 
+    id: string; 
+    photoUri?: string; 
+    notes?: string; 
+  }>();
+  
   const router = useRouter();
   const signatureRef = useRef<any>(null);
 
-  const handleSignature = (signatureBase64: string) => {
+  const handleSignature = async (signatureBase64: string) => {
     try {
-      saveDispatchOffline({
+      const dispatchData = {
         dispatchId: id,
-        notes: 'Entrega finalizada com sucesso na obra.',
+        notes: notes || 'Entrega finalizada com sucesso na obra.',
         signatureUri: signatureBase64,
-        photoUri: 'placeholder_photo_uri',
-      });
+        photoUri: photoUri || '',
+      };
 
-      Alert.alert('Sucesso', 'Assinatura capturada e salva offline com sucesso!');
-      router.back();
+      // 1. Salva offline por segurança (caso caia o sinal na rua)
+      await saveDispatchOffline(dispatchData);
+
+      // 2. Tenta enviar direto para o backend se estiver online
+      try {
+        await api.post(`/dispatches/${id}/complete`, {
+          signature: signatureBase64,
+          photoUrl: photoUri,
+          notes: dispatchData.notes,
+        });
+      } catch (onlineError) {
+        console.log('Sem internet, salvo apenas offline para sincronizar depois.');
+      }
+
+      Alert.alert('Sucesso!', 'Entrega concluída e registrada com sucesso.');
+      // Volta para a lista de ordens do dia do motorista
+      router.replace('/(driver)/dispatches'); 
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível salvar a assinatura localmente.');
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível salvar a assinatura e finalizar a entrega.');
     }
   };
 
   const handleEmpty = () => {
-    Alert.alert('Atenção', 'O cliente precisa assinar antes de prosseguir.');
+    Alert.alert('Atenção', 'O cliente precisa assinar no campo acima antes de prosseguir.');
   };
 
   const handleClear = () => {
@@ -132,5 +155,5 @@ const styleWebView = `
   .m-signature-pad { box-shadow: none; border: none; }
   .m-signature-pad--body { border: none; }
   .m-signature-pad--footer { display: none; margin: 0px; }
-  body, html { width: 100%; height: 100%; }
+  body, html { width: 100%; height: 100%; background-color: #f9fafb; }
 `;
