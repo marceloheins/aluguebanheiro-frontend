@@ -18,6 +18,13 @@ interface Equipment {
   serialNumber: string;
   type: string;
 }
+function formatEquipType(type: string): string{
+  const translations: Record<string, string> ={
+    PORTA_POTTY: 'Banheiro',
+    DUMPSTER: 'Caçamba',
+  }
+  return translations[type] || type;
+}
 
 export default function NewRentalPage() {
   const router = useRouter();
@@ -71,8 +78,8 @@ export default function NewRentalPage() {
   };
 
   return (
-    <main className="p-8 max-w-3xl mx-auto bg-white rounded-lg shadow-sm border mt-6">
-      <h1 className="text-2xl font-bold mb-6">Novo Contrato de Locação (Multi-itens)</h1>
+    <main className="p-8 max-w-3xl mx-auto bg-grey-600 rounded-lg shadow-sm border mt-6">
+      <h1 className="text-2xl font-bold text-emerald-900 mb-6">Novo Contrato de Locação (Multi-itens)</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -138,11 +145,13 @@ export default function NewRentalPage() {
                     key={eq.id}
                     onClick={() => handleToggleEquipment(eq.id)}
                     className={`p-2 rounded border cursor-pointer flex justify-between items-center ${
-                      isSelected ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-200'
+                      isSelected ? 'bg-green-100 border-emerald-500 text-emerald-700' : 'bg-white border-gray-200'
                     }`}
                   >
-                    <span>{eq.serialNumber} ({eq.type})</span>
-                    <span className="text-xs font-bold">{isSelected ? '✓ Selecionado' : '+ Adicionar'}</span>
+
+                    <span> {eq.serialNumber} ({formatEquipType(eq.type)})</span>
+                    <span className="text-xs font-bold">
+                      {isSelected ? '✓ Selecionado' : '+ Adicionar'}</span>
                   </div>
                 );
               })}
@@ -153,7 +162,7 @@ export default function NewRentalPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white p-3 rounded-md font-bold hover:bg-blue-700 transition"
+          className="w-full bg-emerald-600 text-white p-3 rounded-md font-bold hover:bg-emerald-700 transition"
         >
           {loading ? 'Salvando Contrato...' : 'Criar Contrato e Alocar Equipamentos'}
         </button>

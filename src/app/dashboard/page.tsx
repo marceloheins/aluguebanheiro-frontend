@@ -1,6 +1,6 @@
 // src/app/dashboard/page.tsx
 "use client";
-
+import { Upload } from 'lucide-react';
 import { api } from '@/services/api';
 import { useDispatchesToday } from '../../features/dispatches/hooks/useDispatches';
 
@@ -47,13 +47,14 @@ const handleExport = async () => {
   return (
     <main className="p-8 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Visão Operacional de Hoje</h1>
-        <p className="text-sm text-gray-500">Acompanhe em tempo real o andamento das entregas e coletas na rua.</p>
+        <h1 className="text-3xl font-bold text-emerald-900">Visão Operacional de Hoje</h1>
+        <p className="text-sm text-emerald-700">Acompanhe em tempo real o andamento das entregas e coletas na rua.</p>
          <button
           onClick={handleExport}
-          className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white font-medium text-sm rounded-lg hover:bg-blue-700 transition shadow-sm"
+          className="inline-flex items-center justify-center px-3 py-3  bg-emerald-600 text-white font-medium text-sm rounded-full hover:bg-emerald-700 transition shadow-sm"
         >
-          Exportar Relatório
+          <Upload/>
+          
         </button>
       
       
@@ -83,7 +84,7 @@ const handleExport = async () => {
       {/* Lista de Ordens de Serviço */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="p-6 border-b bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-800">Ordens de Serviço Agendadas</h2>
+          <h2 className="text-lg font-semibold text-emerald-800">Ordens de Serviço Agendadas</h2>
         </div>
         <div className="divide-y divide-gray-200">
           {dispatches?.length === 0 ? (

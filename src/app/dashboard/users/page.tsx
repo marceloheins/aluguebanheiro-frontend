@@ -95,9 +95,9 @@ export default function UsersPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md text-sm transition disabled:opacity-50 h-9.5"
+          className="items-center justify-center w-10 h-10 bg-emerald-600 hover:bg-emeral-700 text-white font-medium text-3xl rounded-full  transition disabled:opacity-50 "
         >
-          {isPending ? 'Salvando...' : 'Adicionar Membro'}
+          {isPending ? 'Salvando...' : '+'}
         </button>
       </form>
 

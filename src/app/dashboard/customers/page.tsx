@@ -60,12 +60,12 @@ export default function CustomersPage() {
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestão de Clientes</h1>
+          <h1 className="text-2xl font-bold text-emerald-900">Gestão de Clientes</h1>
           <p className="text-gray-500 text-sm">Visualize e cadastre os clientes do seu tenant.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
           + Novo Cliente
         </button>
@@ -107,7 +107,7 @@ export default function CustomersPage() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Cadastrar Novo Cliente</h2>
+            <h2 className="text-xl font-bold text-emerald-900 mb-4">Cadastrar Novo Cliente</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo / Empresa</label>
@@ -171,7 +171,7 @@ export default function CustomersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {submitting ? 'Salvando...' : 'Salvar Cliente'}
                 </button>

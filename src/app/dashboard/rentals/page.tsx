@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
 import Link from 'next/link';
+import {FileText, Plus, Download, Calendar, DollarSign, User} from 'lucide-react';
 
 export default function RentalsPage() {
   const [rentals, setRentals] = useState<any[]>([]);
@@ -77,12 +78,12 @@ export default function RentalsPage() {
           <button
             onClick={handleExportSelected}
             disabled={exporting || selectedIds.length === 0}
-            className="bg-gray-600 text-white px-4 py-2 rounded-md font-bold hover:bg-gray-700 transition disabled:opacity-50"
+            className="bg-gray-600 text-white px-4 py-2 rounded-md font-bold hover:bg-emerald-700 transition disabled:opacity-50"
           >
-            {exporting ? 'Exportando...' : `📥 Exportar Selecionados (${selectedIds.length})`}
+            {exporting ? 'Exportando...' : `Exportar  (${selectedIds.length})`}
           </button>
-          <Link href="/dashboard/rentals/new" className="bg-blue-600 text-white px-4 py-2 rounded-md font-bold hover:bg-blue-700 transition">
-            Novo Contrato
+          <Link href="/dashboard/rentals/new" className="bg-emerald-600 text-white px-4 py-2 rounded-md font-bold hover:bg-emerald-700 transition">
+            + Novo Contrato
           </Link>
         </div>
       </div>
@@ -112,7 +113,7 @@ export default function RentalsPage() {
               {rentals.map((rental) => {
                 const isSelected = selectedIds.includes(rental.id);
                 return (
-                  <tr key={rental.id} className={`hover:bg-gray-50 ${isSelected ? 'bg-blue-50/50' : ''}`}>
+                  <tr key={rental.id} className={`hover:bg-gray-50 ${isSelected ? 'bg-emerald-100/60' : ''}`}>
                     <td className="p-3 text-center">
                       <input
                         type="checkbox"

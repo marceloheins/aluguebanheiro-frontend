@@ -1,9 +1,18 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import './globals.css';
 import { Providers } from '@/components/Providers'; // Ajuste o caminho se necessário (ex: '../components/Providers')
 
-export const metadata = {
+const inter = Inter({ subsets: ["latin"]});
+
+export const metadata: Metadata = {
   title: 'Alugue Banheiro',
-  description: 'Sistema de gestão',
+  description: 'Sistema de gestão de locação de banheiros químicos e caçambas',
+  icons: {
+    icon: "/adaptive-icon.png",
+    shortcut: "/adaptive-icon.png",
+    apple: "/adaptive.png",
+  }
 };
 
 export default function RootLayout({
@@ -13,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>
+      <body className={`${inter.className} bg-slate-50 text-emerald-900 antialiased`}>
         <Providers>
           {children}
         </Providers>

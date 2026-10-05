@@ -43,18 +43,37 @@ export default function RegisterTenantPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-emerald-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {/* No topo do formulário (tanto em login/page.tsx quanto em register/page.tsx) */}
+    <div className="sm:mx-auto sm:w-full sm:max-w-md text-center flex flex-col items-center">
+  
+  
+  <div className="mb-3">
+    <img
+      src="/icon.jpg" 
+      alt="AlugueBanheiro Logo"
+      className="h-20 w-auto object-contain drop-shadow-sm" 
+    />
+  </div>
+
+  <h2 className="text-3xl font-extrabold text-emerald-500 tracking-tight">
+    byAlugue Banheiro
+  </h2>
+  <p className="mt-1 text-sm text-emerald-800">
+    Gestão inteligente, sustentável e limpa para sua frota.
+  </p>
+</div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="text-center text-2xl font-extrabold text-emerald-900">
           Cadastre sua Locadora
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-emerald-800">
           Gerencie banheiros químicos e caçambas de forma profissional.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
+        <div className="bg-gray-100 py-8 px-4 shadow-stone-500 sm:rounded-lg sm:px-10 border-2 border-emerald-100/80">
           
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
@@ -64,7 +83,7 @@ export default function RegisterTenantPage() {
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Nome da Locadora</label>
+              <label className="block text-sm font-medium text-emerald-700">Nome da Locadora</label>
               <div className="mt-1">
                 <input
                   name="name"
@@ -79,7 +98,7 @@ export default function RegisterTenantPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">CNPJ da Locadora</label>
+              <label className="block text-sm font-medium text-emerald-700">CNPJ da Locadora</label>
               <div className="mt-1">
                 <input
                   name="document"
@@ -94,7 +113,7 @@ export default function RegisterTenantPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Seu Nome (Administrador)</label>
+              <label className="block text-sm font-medium text-emerald-700">Seu Nome (Administrador)</label>
               <div className="mt-1">
                 <input
                   name="adminName"
@@ -109,7 +128,7 @@ export default function RegisterTenantPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">E-mail de Acesso</label>
+              <label className="block text-sm font-medium text-emerald-700">E-mail de Acesso</label>
               <div className="mt-1">
                 <input
                   name="email"
@@ -124,7 +143,7 @@ export default function RegisterTenantPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Senha</label>
+              <label className="block text-sm font-medium text-emerald-700">Senha</label>
               <div className="mt-1">
                 <input
                   name="password"
@@ -142,7 +161,7 @@ export default function RegisterTenantPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition"
               >
                 {loading ? 'Cadastrando...' : 'Criar Conta e Integrar Asaas'}
               </button>

@@ -89,17 +89,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex shadow-sm">
+      <aside className="w-64 bg-white border-r border-gray-200  flex-col justify-between hidden md:flex shadow-sm">
         <div>
           {/* Logo / Header da Marca e do Tenant */}
           <div className="p-6 border-b border-gray-100">
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-800 bg-clip-text text-transparent" title={tenantName}>
+            <span className="text-xl font-bold bg-gradient from-emerald-600 to-emerald-800 bg-clip-text text-transparent" title={tenantName}>
               {tenantName}
             </span>
             
-            <div className="mt-2 flex items-center gap-1.5 bg-blue-50/70 border border-blue-100 px-2.5 py-1 rounded-md">
+            <div className="mt-2 flex items-center gap-1.5px-2.5 py-1 rounded-md">
              
-              <span className="text-xs font-semibold text-blue-900 truncate" >
+              <span className="text-xs font-semibold text-emerald-500 truncate" >
                 byAlugue Banheiro
               </span>
             </div>
@@ -117,11 +117,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href={item.href}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-emerald-100 text-emerald-500 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-gray-400'}`} />
                   {item.label}
                 </Link>
               );
@@ -135,10 +135,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Conteúdo Principal */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar responsiva */}
-        <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between md:justify-end relative">
+        <header className="h-16 bg-white border-b border-gray-100 px-6 flex items-center justify-between md:justify-end relative">
           <div className="flex items-center gap-2 md:hidden">
             <span className="text-sm font-bold text-gray-900">AlugueBanheiro</span>
-            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium">{tenantName}</span>
+            <span className="text-xs bg-blue-100 text-emerald-800 px-2 py-0.5 rounded font-medium">{tenantName}</span>
           </div>
           
           {/* Menu do Usuário (Dropdown) */}
@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="flex items-center gap-3 hover:bg-gray-50 p-1.5 rounded-lg transition border border-transparent hover:border-gray-200"
             >
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-medium flex items-center justify-center text-xs">
+              <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-medium flex items-center justify-center text-xs">
                 {getInitials(userName)}
               </div>
               <div className="hidden sm:flex flex-col items-start">

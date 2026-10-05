@@ -58,7 +58,7 @@ export default function EquipmentsPage() {
       case 'AVAILABLE':
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disponível</span>;
       case 'RENTED':
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Alocado no Cliente</span>;
+        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Alugado</span>;
       case 'MAINTENANCE':
         return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Manutenção</span>;
       default:
@@ -79,12 +79,12 @@ export default function EquipmentsPage() {
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Equipamentos</h1>
+          <h1 className="text-2xl font-bold text-emerald-900">Equipamentos</h1>
           <p className="text-gray-500 text-sm">Controle o estoque de banheiros químicos e caçambas.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
         >
           + Novo Equipamento
         </button>
@@ -110,7 +110,7 @@ export default function EquipmentsPage() {
                 <tr key={eq.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{eq.serialNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {eq.type === 'PORTA_POTTY' ? 'Banheiro Químico' : 'Caçamba / Estrutura'}
+                    {eq.type === 'PORTA_POTTY' ? 'Banheiro Químico' : 'Caçamba'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{statusBadge(eq.status)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-medium">
@@ -126,7 +126,7 @@ export default function EquipmentsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Cadastrar Novo Equipamento</h2>
+            <h2 className="text-xl font-bold text-emerald-900 mb-4">Cadastrar Novo Equipamento</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Número de Série / Código</label>
@@ -147,7 +147,7 @@ export default function EquipmentsPage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="PORTA_POTTY">Banheiro Químico</option>
-                  <option value="DUMPSTER">Caçamba / Estrutura</option>
+                  <option value="DUMPSTER">Caçamba</option>
                 </select>
               </div>
               <div>
@@ -158,11 +158,11 @@ export default function EquipmentsPage() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="AVAILABLE">Disponível</option>
-                  <option value="RENTED">Alocado no Cliente</option>
+                  <option value="RENTED">Alugado</option>
                   <option value="MAINTENANCE">Manutenção</option>
                 </select>
               </div>
-              {/* 👇 NOVO CAMPO: LOCALIZAÇÃO 👇 */}
+           
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
                 <select
@@ -186,7 +186,7 @@ export default function EquipmentsPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {submitting ? 'Salvando...' : 'Salvar Equipamento'}
                 </button>
