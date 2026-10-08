@@ -14,7 +14,7 @@ export function useCreateEquipment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (newEquipment: CreateEquipmentDTO) => createEquipment(newEquipment),
+    mutationFn: (newEquipment: CreateEquipmentDTO) => createEquipment(newEquipment as any),
     onSuccess: () => {
       // Invalida o cache para forçar a listagem a recarregar instantaneamente
       queryClient.invalidateQueries({ queryKey: ['equipments'] });

@@ -1,6 +1,0 @@
-{
-  "plugins": [
-    "expo-sqlite",
-    "expo-secure-store"
-  ]
-}

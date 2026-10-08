@@ -1,22 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { api } from '@/services/api';
+// src/app/dashboard/rentals/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useRentals } from '@/features/rentals/hooks/useRentals';
 import Link from 'next/link';
-import {FileText, Plus, Download, Calendar, DollarSign, User} from 'lucide-react';
 
 export default function RentalsPage() {
-  const [rentals, setRentals] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Substituímos o useEffect e a chamada direta da API pelo React Query
+  const { data: rentals = [], isLoading } = useRentals();
+  
   const [exporting, setExporting] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    api.get('/rentals')
-      .then((res) => setRentals(res.data))
-      .catch((err) => console.error('Erro ao buscar contratos:', err))
-      .finally(() => setLoading(false));
-  }, []);
 
   const handleToggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -42,14 +39,12 @@ export default function RentalsPage() {
       setExporting(true);
       const selectedData = rentals.filter((r) => selectedIds.includes(r.id));
       
-      // 1. Adicionado o campo "Contratante" no cabeçalho do CSV
       const csvHeader = 'ID;Contratante;Início;Status;Valor Total\n';
       const csvRows = selectedData.map((r) => {
         const customerName = r.customer?.name ? `"${r.customer.name}"` : '"N/A"';
         return `${r.id};${customerName};${new Date(r.startDate).toLocaleDateString()};${r.status};${r.totalValue}`;
       }).join('\n');
 
-      // 2. BOM (\uFEFF) para UTF-8 correto no Excel
       const bom = '\uFEFF';
       const blob = new Blob([bom + csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
       
@@ -68,7 +63,7 @@ export default function RentalsPage() {
     }
   };
 
-  if (loading) return <div className="p-8">Carregando contratos...</div>;
+  if (isLoading) return <div className="p-8">Carregando contratos...</div>;
 
   return (
     <main className="p-8 max-w-6xl mx-auto">

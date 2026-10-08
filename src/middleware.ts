@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   if (token) {
     try {
       // Converte o segredo do backend em Uint8Array exigido pelo jose
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'seu_segredo_jwt_super_secreto');
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'chave_secreta_padrao');
       
       // Valida a assinatura criptográfica e a expiração do token
       await jwtVerify(token, secret);
@@ -41,5 +41,5 @@ export async function middleware(request: NextRequest) {
 
 // Configura quais rotas o Middleware deve interceptar
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|login).*)'],
 };

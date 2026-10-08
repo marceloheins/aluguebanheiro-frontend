@@ -1,5 +1,5 @@
 // src/services/offlineStorage.ts
-import { getDb } from './database';
+import { getDb } from '../../../app-motorista/services/database';
 
 interface SaveOfflineDispatchParams {
   dispatchId: string;

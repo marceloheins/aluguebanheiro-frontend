@@ -14,7 +14,7 @@ export function useCreateRental() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (newRental: CreateRentalDTO) => createRental(newRental),
+    mutationFn: (newRental: CreateRentalDTO) => createRental(newRental as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rentals'] });
       queryClient.invalidateQueries({ queryKey: ['equipments'] }); // Atualiza status do estoque

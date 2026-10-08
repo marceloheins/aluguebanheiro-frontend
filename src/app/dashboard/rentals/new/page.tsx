@@ -1,48 +1,75 @@
-
-
-
-
+// src/app/dashboard/rentals/new/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/services/api';
+import { useCustomers } from '@/features/customers/hooks/useCustomers';
+import { useEquipments } from '@/features/equipments/hooks/useEquipments';
+import { useCreateRental } from '@/features/rentals/hooks/useRentals';
+import { toast } from 'sonner';
+import { usePricing } from '@/features/pricing/hooks/usePricing';
 
-interface Customer {
-  id: string;
-  name: string;
-}
+// Tabela de preços sugeridos por tipo de equipamento (Ajuste conforme sua tabela comercial)
+const EQUIPMENT_PRICES: Record<string, number> = {
+  PORTA_POTTY: 150.00, // Diária ou valor base do Banheiro Químico
+  DUMPSTER: 280.00,    // Diária ou valor base da Caçamba
+};
 
-interface Equipment {
-  id: string;
-  serialNumber: string;
-  type: string;
-}
-function formatEquipType(type: string): string{
-  const translations: Record<string, string> ={
-    PORTA_POTTY: 'Banheiro',
+function formatEquipType(type: string): string {
+  const translations: Record<string, string> = {
+    PORTA_POTTY: 'Banheiro Químico',
     DUMPSTER: 'Caçamba',
-  }
+  };
   return translations[type] || type;
 }
 
 export default function NewRentalPage() {
   const router = useRouter();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [equipments, setEquipments] = useState<Equipment[]>([]);
-  
+  const { data: pricingTable } = usePricing();
+  const { data: customers = [], isLoading: loadingCustomers } = useCustomers();
+  const { data: allEquipments = [], isLoading: loadingEquipments } = useEquipments();
+  const { mutate: createRental, isPending: submitting } = useCreateRental();
+
+  // Filtramos apenas equipamentos disponíveis no pátio
+  const availableEquipments = allEquipments.filter(
+    (eq) => eq.status === 'AVAILABLE' && eq.location === 'YARD'
+  );
+
+  // Estados do Formulário
   const [customerId, setCustomerId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [totalValue, setTotalValue] = useState('');
   const [selectedEquipments, setSelectedEquipments] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
 
+  // 🧠 CÁLCULO AUTOMÁTICO DE VALOR
   useEffect(() => {
-    // Carrega clientes e equipamentos disponíveis no pátio
-    api.get('/customers').then((res) => setCustomers(res.data));
-    api.get('/equipments?status=AVAILABLE').then((res) => setEquipments(res.data));
-  }, []);
+    if (selectedEquipments.length === 0 || !pricingTable) {
+      setTotalValue('');
+      return;
+    }
+
+    // Soma o valor base dos equipamentos selecionados
+    let calculatedTotal = 0;
+    selectedEquipments.forEach((eqId) => {
+      const equip = availableEquipments.find((e) => e.id === eqId);
+      if (equip) {
+        const basePrice = pricingTable[equip.type as keyof typeof pricingTable] || 100;
+        calculatedTotal += basePrice;
+      }
+    });
+
+    // Se houver data de início e término, podemos multiplicar pelos dias (opcional)
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end.getTime() - start.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+      calculatedTotal = calculatedTotal * diffDays;
+    }
+
+    setTotalValue(calculatedTotal.toFixed(2));
+  }, [selectedEquipments, startDate, endDate, availableEquipments]);
 
   const handleToggleEquipment = (id: string) => {
     setSelectedEquipments((prev) =>
@@ -50,45 +77,53 @@ export default function NewRentalPage() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedEquipments.length === 0) {
-      alert('Selecione pelo menos um equipamento para o contrato.');
+      toast.error('Selecione pelo menos um equipamento para o contrato.');
       return;
     }
 
-    try {
-      setLoading(true);
-      await api.post('/rentals', {
+    createRental(
+      {
         customerId,
         startDate,
         endDate: endDate || undefined,
         totalValue: Number(totalValue),
         equipmentIds: selectedEquipments,
-      });
-
-      alert('Contrato criado com sucesso!');
-      router.push('/dashboard/rentals');
-    } catch (error) {
-      console.error('Erro ao criar contrato:', error);
-      alert('Erro ao registrar locação.');
-    } finally {
-      setLoading(false);
-    }
+      } as any,
+      {
+        onSuccess: () => {
+          toast.success('Contrato criado com sucesso!');
+          router.push('/dashboard/rentals');
+        },
+        onError: (error: any) => {
+          console.error('Erro ao criar contrato:', error);
+        }
+      }
+    );
   };
 
-  return (
-    <main className="p-8 max-w-3xl mx-auto bg-grey-600 rounded-lg shadow-sm border mt-6">
-      <h1 className="text-2xl font-bold text-emerald-900 mb-6">Novo Contrato de Locação (Multi-itens)</h1>
+  const isLoadingData = loadingCustomers || loadingEquipments;
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+  if (isLoadingData) {
+    return <div className="p-8 text-center text-gray-500">Carregando dados para o contrato...</div>;
+  }
+
+  return (
+    <main className="p-8 max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-emerald-100 mt-6">
+      <h1 className="text-2xl font-bold text-emerald-900 mb-6">Novo Contrato de Locação</h1>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Cliente (Construtora / Evento)</label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">
+            Cliente (Construtora / Evento)
+          </label>
           <select
             value={customerId}
             onChange={(e) => setCustomerId(e.target.value)}
             required
-            className="w-full mt-1 p-2 border rounded-md"
+            className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm bg-white"
           >
             <option value="">Selecione um cliente...</option>
             {customers.map((c) => (
@@ -97,30 +132,39 @@ export default function NewRentalPage() {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Data de Início</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">
+              Data de Início
+            </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               required
-              className="w-full mt-1 p-2 border rounded-md"
+              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Data de Término (Opcional)</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">
+              Data de Término (Opcional)
+            </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full mt-1 p-2 border rounded-md"
+              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Valor Total do Contrato (R$)</label>
+          <div className="flex justify-between items-center mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-emerald-700">
+              Valor Total do Contrato (R$)
+            </label>
+            <span className="text-[11px] text-slate-400 italic">Calculado automaticamente (editável)</span>
+          </div>
           <input
             type="number"
             step="0.01"
@@ -128,30 +172,39 @@ export default function NewRentalPage() {
             onChange={(e) => setTotalValue(e.target.value)}
             required
             placeholder="0.00"
-            className="w-full mt-1 p-2 border rounded-md"
+            className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-bold text-emerald-900"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Equipamentos Disponíveis no Pátio (Selecione um ou mais)</label>
-          {equipments.length === 0 ? (
-            <p className="text-sm text-gray-500">Nenhum equipamento disponível no momento.</p>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-2">
+            Equipamentos Disponíveis no Pátio
+          </label>
+          {availableEquipments.length === 0 ? (
+            <p className="text-sm text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">
+              Nenhum equipamento disponível no pátio no momento. Cadastre ou retorne equipamentos para o pátio.
+            </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border p-3 rounded-md bg-gray-50">
-              {equipments.map((eq) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-52 overflow-y-auto border border-slate-200 p-3 rounded-xl bg-slate-50">
+              {availableEquipments.map((eq) => {
                 const isSelected = selectedEquipments.includes(eq.id);
+                const suggestedPrice = EQUIPMENT_PRICES[eq.type] || 100;
                 return (
                   <div
                     key={eq.id}
                     onClick={() => handleToggleEquipment(eq.id)}
-                    className={`p-2 rounded border cursor-pointer flex justify-between items-center ${
-                      isSelected ? 'bg-green-100 border-emerald-500 text-emerald-700' : 'bg-white border-gray-200'
+                    className={`p-3 rounded-xl border cursor-pointer flex justify-between items-center transition-all ${
+                      isSelected ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-xs' : 'bg-white border-slate-200 hover:border-emerald-300'
                     }`}
                   >
-
-                    <span> {eq.serialNumber} ({formatEquipType(eq.type)})</span>
-                    <span className="text-xs font-bold">
-                      {isSelected ? '✓ Selecionado' : '+ Adicionar'}</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm text-slate-800">{eq.serialNumber}</span>
+                      <span className="text-xs text-slate-500">{formatEquipType(eq.type)}</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold mt-1">R$ {suggestedPrice.toFixed(2)}</span>
+                    </div>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                      {isSelected ? 'Selecionado ✓' : '+ Adicionar'}
+                    </span>
                   </div>
                 );
               })}
@@ -161,10 +214,10 @@ export default function NewRentalPage() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="w-full bg-emerald-600 text-white p-3 rounded-md font-bold hover:bg-emerald-700 transition"
+          disabled={submitting}
+          className="w-full bg-emerald-600 text-white p-3.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors mt-6 disabled:opacity-50 shadow-sm"
         >
-          {loading ? 'Salvando Contrato...' : 'Criar Contrato e Alocar Equipamentos'}
+          {submitting ? 'Salvando Contrato...' : 'Criar Contrato e Alocar Equipamentos'}
         </button>
       </form>
     </main>

@@ -87,68 +87,69 @@ export default function YardManagementPage() {
       {/* Grid de Ativos */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredEquipments?.map((eq) => {
-          const statusInfo = statusConfig[eq.status] || { label: eq.status, color: 'bg-gray-100 text-gray-800' };
-          const locationInfo = locationConfig[eq.location] || { label: eq.location, color: 'bg-gray-100 text-gray-800' };
-          const currentCustomer = eq.rentalItem?.[0]?.rental?.customer?.name;
+  const statusInfo = statusConfig[eq.status] || { label: eq.status, color: 'bg-gray-100 text-gray-800' };
+  const locationInfo = locationConfig[eq.location] || { label: eq.location, color: 'bg-gray-100 text-gray-800' };
+  const currentCustomer = eq.rentalItem?.[0]?.rental?.customer?.name;
 
-          return (
-            <div key={eq.id} className="bg-green-50 rounded-lg shadow-sm border border-gray-300 p-5 flex flex-col justify-between">
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <span className="font-mono text-sm font-semibold text-gray-900 bg-gray-100 px-2.5 py-1 rounded">
-                    {eq.serialNumber}
-                  </span>
-                  <div className="flex gap-1.5">
-                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${statusInfo.color}`}>
-                      {statusInfo.label}
-                    </span>
-                    <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${locationInfo.color}`}>
-                      {locationInfo.label}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-600 font-medium mb-1">
-                  Tipo: <span className="font-semibold text-slate-900"> {formatEquipType(eq.type)}</span></p>
-                {currentCustomer && (
-                  <p className="text-xs text-blue-600 mb-3">Cliente/Obra: {currentCustomer}</p>
-                )}
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-gray-300 flex flex-col gap-2">
-                {/* Alterar Status Comercial */}
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-400">Status Comercial:</span>
-                  <select
-                    value={eq.status}
-                    onChange={(e) => mutation.mutate({ id: eq.id, payload: { status: e.target.value as EquipmentStatus } })}
-                    disabled={mutation.isPending}
-                    className="border rounded p-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-                  >
-                    <option value="AVAILABLE">Disponível</option>
-                    <option value="RENTED">Alugado</option>
-                    <option value="MAINTENANCE">Manutenção</option>
-                  </select>
-                </div>
-
-                {/* Alterar Localização Física */}
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-400">Localização:</span>
-                  <select
-                    value={eq.location}
-                    onChange={(e) => mutation.mutate({ id: eq.id, payload: { location: e.target.value as EquipmentLocation } })}
-                    disabled={mutation.isPending}
-                    className="border rounded p-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer"
-                  >
-                    <option value="YARD">No Pátio</option>
-                    <option value="AT_CLIENT">No Cliente</option>
-                    <option value="IN_TRANSIT">Em Trânsito</option>
-                  </select>
-                </div>
+  return (
+    <div key={eq.id} className="bg-white rounded-xl shadow-sm border border-emerald-100/80 p-5 flex flex-col justify-between hover:shadow-md transition">
+      <div>
+        <div className="flex justify-between items-start mb-4">
+          <span className="font-mono text-sm font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md">
+            {eq.serialNumber}
+          </span>
+          <div className="flex flex-col gap-2 items-end">
+            {/* Badge Interativo: Status Comercial */}
+            <div className="relative">
+              <select
+                value={eq.status}
+                onChange={(e) => mutation.mutate({ id: eq.id, payload: { status: e.target.value as EquipmentStatus } })}
+                disabled={mutation.isPending}
+                className={`appearance-none cursor-pointer pl-3 pr-7 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${statusInfo.color} ${mutation.isPending ? 'opacity-50' : 'hover:brightness-95'}`}
+              >
+                <option value="AVAILABLE">Disponível</option>
+                <option value="RENTED">Alugado</option>
+                <option value="MAINTENANCE">Manutenção</option>
+              </select>
+              {/* Ícone customizado de seta para o select */}
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-70">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
             </div>
-          );
-        })}
+
+            {/* Badge Interativo: Localização Física */}
+            <div className="relative">
+              <select
+                value={eq.location}
+                onChange={(e) => mutation.mutate({ id: eq.id, payload: { location: e.target.value as EquipmentLocation } })}
+                disabled={mutation.isPending}
+                className={`appearance-none cursor-pointer pl-3 pr-7 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full border focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all ${locationInfo.color} ${mutation.isPending ? 'opacity-50' : 'hover:brightness-95'}`}
+              >
+                <option value="YARD">No Pátio</option>
+                <option value="AT_CLIENT">No Cliente</option>
+                <option value="IN_TRANSIT">Em Trânsito</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-70">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-sm text-slate-600 font-medium mb-1">
+          Tipo: <span className="font-bold text-slate-900">{formatEquipType(eq.type)}</span>
+        </p>
+        {currentCustomer ? (
+          <p className="text-xs font-semibold text-emerald-700 bg-emerald-50 p-2 rounded-md border border-emerald-100 mt-2">
+           Cliente: {currentCustomer}
+          </p>
+        ) : (
+          <p className="text-xs text-slate-400 mt-2 italic">Sem cliente vinculado no momento.</p>
+        )}
+      </div>
+    </div>
+  );
+})}
       </div>
 
       {filteredEquipments?.length === 0 && (

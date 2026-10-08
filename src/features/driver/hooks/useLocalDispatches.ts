@@ -1,6 +1,6 @@
 // src/features/driver/hooks/useLocalDispatches.ts
 import { useState, useEffect } from 'react';
-import { getDb } from '../../../services/database';
+import { getDb } from '../../../../../app-motorista/services/database';
 
 export interface LocalDispatchItem {
   id: string;

@@ -4,19 +4,57 @@
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api } from '@/services/api';
+import { api } from '@/lib/api';
 import { LogIn } from 'lucide-react';
+import Cookies from 'js-cookie';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const {mutate: login, isPending, isError} = useLogin();
  
 
-  const handleLogin = (e: React.FormEvent) => {
+ const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    login({email, password});
+
+    login(
+      { email, password },
+      {
+        onSuccess: (data: any) => {
+         
+
+          // Tenta pegar o token de diferentes formas comuns de retorno de API
+          const token = data?.token || data?.accessToken || data?.data?.token;
+          const user = data?.user || data?.data?.user;
+
+          if (!token) {
+        
+            toast.error('Erro: Token não retornado pelo servidor.');
+            return;
+          }
+
+          // Gravando o cookie explicitamente
+          Cookies.set('saas_token', token, {
+            expires: 7,
+            path: '/',
+            sameSite: 'lax',
+          });
+
+          // Validação imediata se o cookie foi gravado
+          const savedToken = Cookies.get('saas_token');
+      
+
+          toast.success(`Bem-vindo de volta, ${user?.name || 'usuário'}!`);
+          router.push('/dashboard');
+        },
+        
+      }
+    );
   };
+
+ 
 
 
   return (

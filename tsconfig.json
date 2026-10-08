@@ -34,7 +34,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "../app-motorista/mobile/signature.tsx", "../app-motorista/services/authService.ts", "../app-motorista/services/database.ts"  ],
   "exclude": [
     "node_modules"
   ]

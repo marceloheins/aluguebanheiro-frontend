@@ -9,7 +9,7 @@ services:
     restart: always
     environment:
       - DATABASE_URL=postgresql://usuario:senha@ip-do-banco:5432/saas_rentals
-      - JWT_SECRET=sua_chave_secreta_aqui
+      - JWT_SECRET=sua_chave_padrao
       - PORT=3000
 
   watchtower:

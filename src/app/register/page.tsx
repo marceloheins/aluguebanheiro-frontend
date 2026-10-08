@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { api } from '@/services/api'; // Certifique-se de que o caminho do seu axios client está correto
 
 export default function RegisterTenantPage() {
@@ -31,8 +32,8 @@ export default function RegisterTenantPage() {
     try {
       // Envia os dados para a rota POST /tenants do seu backend Express
       await api.post('/tenants', formData);
-
-      alert('Locadora cadastrada com sucesso! Faça login para acessar o sistema.');
+      toast.success('Locadora cadastrada com sucesso! Faça login para acessar o sistema.');
+      
       router.push('/login'); // Redireciona para a tela de login
     } catch (err: any) {
       console.error(err);
